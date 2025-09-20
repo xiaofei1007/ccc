@@ -1,11 +1,11 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 // shadcn/ui imports
 import { Button } from "./components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./components/ui/card";
 import { Input } from "./components/ui/input";
 import { Checkbox } from "./components/ui/checkbox";
-import { Modal } from "./components/ui/modal";
+// import { Modal } from "./components/ui/modal";
 
 // Single-file React demo app for BioPatch+ (Tailwind + shadcn/ui)
 // Default export component
@@ -112,9 +112,9 @@ const chartData = Array.from({ length: 24 }).map((_, i) => {
     return t.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   }
 
-  function addHistory(text) {
+  const addHistory = useCallback((text) => {
     setHistory((h) => [{ time: timestampOffset(0), text }, ...h].slice(0, 50));
-  }
+  }, []);
 
   useEffect(() => {
     if (showNotification) {
@@ -171,6 +171,15 @@ const chartData = Array.from({ length: 24 }).map((_, i) => {
 
   // Heart rate countdown effect
   useEffect(() => {
+    function handleHrApproveAuto() {
+      setShowHrNotification(false);
+      setHealth((s) => ({ ...s, hr: 85 }));
+      addHistory(
+        "β-blocker injected automatically at " +
+          new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      );
+    }
+
     if (showHrNotification) {
       clearInterval(hrCountdownRef.current);
       hrCountdownRef.current = setInterval(() => {
@@ -186,7 +195,7 @@ const chartData = Array.from({ length: 24 }).map((_, i) => {
       clearInterval(hrCountdownRef.current);
     }
     return () => clearInterval(hrCountdownRef.current);
-  }, [showHrNotification]);
+  }, [showHrNotification, addHistory]);
 
   // Heart rate handlers
   function handleHrApproveNow() {
@@ -214,17 +223,18 @@ const chartData = Array.from({ length: 24 }).map((_, i) => {
     addHistory("β-blocker injected manually by user (from issues list).");
   }
 
-  function handleHrApproveAuto() {
-    setShowHrNotification(false);
-    setHealth((s) => ({ ...s, hr: 85 }));
-    addHistory(
-      "β-blocker injected automatically at " +
-        new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-    );
-  }
 
   // SpO₂ countdown effect
   useEffect(() => {
+    function handleSpo2ApproveAuto() {
+      setShowSpo2Notification(false);
+      setHealth((s) => ({ ...s, spo2: 98 }));
+      addHistory(
+        "Oxygen therapy triggered automatically at " +
+          new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      );
+    }
+
     if (showSpo2Notification) {
       clearInterval(spo2CountdownRef.current);
       spo2CountdownRef.current = setInterval(() => {
@@ -240,7 +250,7 @@ const chartData = Array.from({ length: 24 }).map((_, i) => {
       clearInterval(spo2CountdownRef.current);
     }
     return () => clearInterval(spo2CountdownRef.current);
-  }, [showSpo2Notification]);
+  }, [showSpo2Notification, addHistory]);
 
   // SpO₂ handlers
   function handleSpo2ApproveNow() {
@@ -268,14 +278,6 @@ const chartData = Array.from({ length: 24 }).map((_, i) => {
     addHistory("Oxygen therapy triggered manually by user (from issues list).");
   }
 
-  function handleSpo2ApproveAuto() {
-    setShowSpo2Notification(false);
-    setHealth((s) => ({ ...s, spo2: 98 }));
-    addHistory(
-      "Oxygen therapy triggered automatically at " +
-        new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-    );
-  }
 
 
   function handleSignup(e) {
